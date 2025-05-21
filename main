@@ -1,0 +1,77 @@
+
+
+# Question 1: Extract Tesla Stock Data Using yfinance
+import yfinance as yf
+import pandas as pd
+
+print("\n=== Question 1: Tesla Stock Data ===")
+tesla = yf.Ticker("TSLA")
+tesla_data = tesla.history(period="max")
+tesla_data.reset_index(inplace=True)
+tesla_data.to_csv("tesla_stock_data.csv", index=False)
+print(tesla_data.head())
+
+# Question 2: Extract Tesla Revenue Data Using Web Scraping
+import requests
+from bs4 import BeautifulSoup
+
+print("\n=== Question 2: Tesla Revenue Data ===")
+url_tsla = "https://www.macrotrends.net/stocks/charts/TSLA/tesla/revenue"
+html_tsla = requests.get(url_tsla).text
+soup_tsla = BeautifulSoup(html_tsla, "html.parser")
+tables_tsla = soup_tsla.find_all("table")
+
+for table in tables_tsla:
+    if "Tesla Quarterly Revenue" in table.text:
+        revenue_table_tsla = table
+        break
+
+tesla_revenue = pd.read_html(str(revenue_table_tsla))[0]
+tesla_revenue.columns = ["Date", "Revenue"]
+tesla_revenue["Revenue"] = tesla_revenue["Revenue"].str.replace("$", "", regex=False).str.replace(",", "", regex=False)
+tesla_revenue.dropna(inplace=True)
+tesla_revenue.to_csv("tesla_revenue_data.csv", index=False)
+print(tesla_revenue.tail())
+
+# Question 3: Extract GameStop Stock Data Using yfinance
+print("\n=== Question 3: GameStop Stock Data ===")
+gme = yf.Ticker("GME")
+gme_data = gme.history(period="max")
+gme_data.reset_index(inplace=True)
+gme_data.to_csv("gamestop_stock_data.csv", index=False)
+print(gme_data.head())
+
+# Question 4: Extract GameStop Revenue Data Using Web Scraping
+print("\n=== Question 4: GameStop Revenue Data ===")
+url_gme = "https://www.macrotrends.net/stocks/charts/GME/gamestop/revenue"
+html_gme = requests.get(url_gme).text
+soup_gme = BeautifulSoup(html_gme, "html.parser")
+tables_gme = soup_gme.find_all("table")
+
+for table in tables_gme:
+    if "GameStop Quarterly Revenue" in table.text:
+        revenue_table_gme = table
+        break
+
+gme_revenue = pd.read_html(str(revenue_table_gme))[0]
+gme_revenue.columns = ["Date", "Revenue"]
+gme_revenue["Revenue"] = gme_revenue["Revenue"].str.replace("$", "", regex=False).str.replace(",", "", regex=False)
+gme_revenue.dropna(inplace=True)
+gme_revenue.to_csv("gamestop_revenue_data.csv", index=False)
+print(gme_revenue.tail())
+
+# Question 5: Plot Tesla Stock Graph
+import plotly.graph_objects as go
+
+print("\n=== Question 5: Tesla Stock Graph ===")
+def make_graph(data, title):
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=data["Date"], y=data["Close"], mode='lines', name="Close Price"))
+    fig.update_layout(title=title, xaxis_title="Date", yaxis_title="Close Price (USD)")
+    fig.show()
+
+make_graph(tesla_data, "Tesla Stock Price History")
+
+# Question 6: Plot GameStop Stock Graph
+print("\n=== Question 6: GameStop Stock Graph ===")
+make_graph(gme_data, "GameStop Stock Price History")
